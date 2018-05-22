@@ -78,12 +78,21 @@
         android:layout_gravity="center_horizontal"
         android:text="ToggleButton" />
 
-    <SurfaceView
+    <TextureView
         android:id="@+id/camera_view_sub"
         android:layout_margin="5dp"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_alignRight="@+id/camera_view"
+        android:layout_alignTop="@+id/camera_view" />
+
+
+    <ImageView
+        android:id="@+id/camera_view_sub_image"
+        android:layout_margin="5dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_alignLeft="@+id/camera_view"
         android:layout_alignTop="@+id/camera_view" />
 
     <ImageButton

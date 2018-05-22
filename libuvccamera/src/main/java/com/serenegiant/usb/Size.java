@@ -69,7 +69,6 @@ public class Size implements Parcelable {
 		intervals = null;
 		updateFrameRate();
 	}
-
 	/**
 	 * コンストラクタ
 	 * @param _type native側のraw_format_tの値, ただし9999は静止画

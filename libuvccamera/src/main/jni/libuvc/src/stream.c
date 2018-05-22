@@ -466,7 +466,7 @@ static uvc_error_t _uvc_get_stream_ctrl_format(uvc_device_handle_t *devh,
 			for (interval = frame->intervals; *interval; ++interval) {
 				if (UNLIKELY(!(*interval))) continue;
 				uint32_t it = 10000000 / *interval;
-				LOGV("it:%d", it);
+				LOGE("it:%d", it);
 				if ((it >= (uint32_t) min_fps) && (it <= (uint32_t) max_fps)) {
 					ctrl->bmHint = (1 << 0); /* don't negotiate interval */
 					ctrl->bFormatIndex = format->bFormatIndex;
@@ -482,7 +482,7 @@ static uvc_error_t _uvc_get_stream_ctrl_format(uvc_device_handle_t *devh,
 				if (UNLIKELY(!fps)) continue;
 				uint32_t interval_100ns = 10000000 / fps;
 				uint32_t interval_offset = interval_100ns - frame->dwMinFrameInterval;
-				LOGV("fps:%d", fps);
+				LOGE("fps:%d", fps);
 				if (interval_100ns >= frame->dwMinFrameInterval
 					&& interval_100ns <= frame->dwMaxFrameInterval
 					&& !(interval_offset

@@ -153,8 +153,13 @@ int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const 
 		clearCameraParams();
 		fd = dup(fd);
 		// 指定したvid,idを持つデバイスを検索, 見つかれば0を返してmDeviceに見つかったデバイスをセットする(既に1回uvc_ref_deviceを呼んである)
-//		result = uvc_find_device2(mContext, &mDevice, vid, pid, NULL, fd);
-		result = uvc_get_device_with_fd(mContext, &mDevice, vid, pid, NULL, fd, busnum, devaddr);
+
+		 result = uvc_find_device2(mContext, &mDevice, vid, pid, NULL, fd);
+		 LOGE("uvc_find_device2,%d",result );
+		if(LIKELY(result)){
+	       result = uvc_get_device_with_fd(mContext, &mDevice, vid, pid, NULL, fd, busnum, devaddr);
+	       	 LOGE("uvc_get_device_with_fd,%d",result );
+		}
 		if (LIKELY(!result)) {
 			// カメラのopen処理
 			result = uvc_open(mDevice, &mDeviceHandle);

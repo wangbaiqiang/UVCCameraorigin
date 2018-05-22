@@ -28,18 +28,22 @@ import java.util.List;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.graphics.SurfaceTexture;
 import android.hardware.usb.UsbDevice;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Surface;
 import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ToggleButton;
 
 import com.serenegiant.common.BaseFragment;
@@ -56,7 +60,7 @@ import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 import com.serenegiant.widget.CameraViewInterface;
 
-public class CameraFragment extends BaseFragment {
+public class CameraFragment extends BaseFragment implements TextureView.SurfaceTextureListener {
 
 	private static final boolean DEBUG = true;
 	private static final String TAG = "CameraFragment";
@@ -71,9 +75,10 @@ public class CameraFragment extends BaseFragment {
 	private ImageButton mRecordButton;
 	private ImageButton mStillCaptureButton;
 	private CameraViewInterface mCameraView;
-	private SurfaceView mCameraViewSub;
+	private TextureView mCameraViewSub;
 	private boolean isSubView;
-
+	private Surface mSurface;
+	private ImageView mCameraViewSubImage;
 	public CameraFragment() {
 		if (DEBUG) Log.v(TAG, "Constructor:");
 //		setRetainInstance(true);
@@ -116,8 +121,10 @@ public class CameraFragment extends BaseFragment {
 		mStillCaptureButton.setEnabled(false);
 		mCameraView = (CameraViewInterface)rootView.findViewById(R.id.camera_view);
 		mCameraView.setAspectRatio(DEFAULT_WIDTH / (float)DEFAULT_HEIGHT);
-		mCameraViewSub = (SurfaceView)rootView.findViewById(R.id.camera_view_sub);
+		mCameraViewSub = (TextureView)rootView.findViewById(R.id.camera_view_sub);
 		mCameraViewSub.setOnClickListener(mOnClickListener);
+		mCameraViewSub.setSurfaceTextureListener(this);
+		mCameraViewSubImage = (ImageView) rootView.findViewById(R.id.camera_view_sub_image);
 		return rootView;
 	}
 
@@ -132,8 +139,10 @@ public class CameraFragment extends BaseFragment {
 	public void onPause() {
 		if (DEBUG) Log.v(TAG, "onPause:");
 		if (mCameraClient != null) {
+
 			mCameraClient.removeSurface(mCameraView.getSurface());
-			mCameraClient.removeSurface(mCameraViewSub.getHolder().getSurface());
+			if (mSurface != null)
+			mCameraClient.removeSurface(mSurface);
 			isSubView = false;
 		}
 		mUSBMonitor.unregister();
@@ -243,7 +252,10 @@ public class CameraFragment extends BaseFragment {
 		public void onConnect() {
 			if (DEBUG) Log.v(TAG, "onConnect:");
 			mCameraClient.addSurface(mCameraView.getSurface(), false);
-			mCameraClient.addSurface(mCameraViewSub.getHolder().getSurface(), false);
+			if (mSurface == null){
+				mSurface = new Surface(mCameraViewSub.getSurfaceTexture());
+			}
+			mCameraClient.addSurface(mSurface, false);
 			isSubView = true;
 			enableButtons(true);
 			setPreviewButton(true);
@@ -291,9 +303,14 @@ public class CameraFragment extends BaseFragment {
 			case R.id.camera_view_sub:
 				if (DEBUG) Log.v(TAG, "onClick:sub view");
 				if (isSubView) {
-					mCameraClient.removeSurface(mCameraViewSub.getHolder().getSurface());
+
+					if (mSurface != null)
+						mCameraClient.removeSurface(mSurface);
 				} else {
-					mCameraClient.addSurface(mCameraViewSub.getHolder().getSurface(), false);
+					if (mSurface == null){
+						mSurface = new Surface(mCameraViewSub.getSurfaceTexture());
+					}
+					mCameraClient.addSurface(mSurface, false);
 				}
 				isSubView = !isSubView;
 				break;
@@ -380,6 +397,32 @@ public class CameraFragment extends BaseFragment {
 					mRecordButton.setColorFilter(0x7fff0000);
 				else
 					mRecordButton.setColorFilter(0);
+			}
+		});
+	}
+
+	@Override
+	public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+
+	}
+
+	@Override
+	public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+	}
+
+	@Override
+	public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+		return false;
+	}
+
+	@Override
+	public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+		Log.d("onSurface","onSurfaceTextureUpdated");
+		mCameraViewSubImage.post(new Runnable() {
+			@Override
+			public void run() {
+				mCameraViewSubImage.setImageBitmap(mCameraViewSub.getBitmap());
 			}
 		});
 	}

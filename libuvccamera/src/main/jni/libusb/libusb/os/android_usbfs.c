@@ -1313,6 +1313,7 @@ static int android_initialize_device(struct libusb_device *dev,
 	memset(desc, 0, sizeof(desc));
     if (!lseek(fd, 0, SEEK_SET)) {
         // ディスクリプタを読み込んでローカルキャッシュする
+        //读取描述符并在本地缓存
         int length = read(fd, desc, sizeof(desc));
         LOGD("Device::init read returned %d errno %d\n", length, errno);
 		if (length > 0) {
